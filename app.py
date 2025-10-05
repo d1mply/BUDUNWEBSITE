@@ -14,7 +14,7 @@ import json
 
 # Flask uygulaması oluştur
 app = Flask(__name__)
-app.secret_key = 'budun-secret-key-2024'
+app.secret_key = os.environ.get('SECRET_KEY', 'budun-secret-key-2024-default')
 
 # Supabase bağlantısı
 SUPABASE_URL = os.environ.get('SUPABASE_URL', 'https://your-project.supabase.co')
