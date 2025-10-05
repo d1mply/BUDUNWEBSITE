@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+
+{% block title %}Poliçeler - BUDUN{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-file-contract me-2"></i>Poliçe Yönetimi
+                </h1>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPolicyModal">
+                    <i class="fas fa-plus me-2"></i>Yeni Poliçe
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <input type="text" class="form-control" id="searchInput" placeholder="Poliçe/Müşteri ara...">
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select" id="productFilter">
+                                <option value="">Tüm Ürünler</option>
+                                <option value="DASK">DASK</option>
+                                <option value="KASKO">KASKO</option>
+                                <option value="TRAFIK">TRAFIK</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select" id="statusFilter">
+                                <option value="">Tüm Durumlar</option>
+                                <option value="active">Aktif</option>
+                                <option value="expiring">Süresi Dolacak</option>
+                                <option value="expired">Süresi Dolmuş</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-outline-secondary" onclick="clearFilters()">
+                                <i class="fas fa-times me-2"></i>Filtreleri Temizle
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Policies Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Poliçe No</th>
+                                    <th>Müşteri</th>
+                                    <th>TC/VKN</th>
+                                    <th>Plaka</th>
+                                    <th>Ürün</th>
+                                    <th>Sigorta Şirketi</th>
+                                    <th>Satışçı</th>
+                                    <th>Prim</th>
+                                    <th>Bitiş Tarihi</th>
+                                    <th>İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody id="policiesTable">
+                                {% for policy in policies %}
+                                <tr>
+                                    <td><strong>{{ policy.policy_number or '-' }}</strong></td>
+                                    <td>{{ policy.customer_name or '-' }}</td>
+                                    <td>{{ policy.customer_tc or '-' }}</td>
+                                    <td>{{ policy.plate_number or '-' }}</td>
+                                    <td><span class="badge bg-secondary">{{ policy.product or '-' }}</span></td>
+                                    <td>{{ policy.insurance_company or '-' }}</td>
+                                    <td>{{ policy.salesperson or '-' }}</td>
+                                    <td><strong>₺{{ (policy.gross_premium or 0)|int|string|replace(',', '.') }}</strong></td>
+                                    <td>{{ policy.end_date or '-' }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="viewPolicy({{ policy.id }})">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-warning" onclick="editPolicy({{ policy.id }})">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Policy Modal -->
+<div class="modal fade" id="addPolicyModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus me-2"></i>Yeni Poliçe Ekle
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="addPolicyForm">
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Müşteri Adı Soyadı *</label>
+                            <input type="text" class="form-control" name="customer_name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">TC/VKN</label>
+                            <input type="text" class="form-control" name="customer_tc">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Plaka</label>
+                            <input type="text" class="form-control" name="plate_number">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Poliçe No</label>
+                            <input type="text" class="form-control" name="policy_number">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Ürün *</label>
+                            <select class="form-select" name="product" required>
+                                <option value="">Seçiniz</option>
+                                <option value="DASK">DASK</option>
+                                <option value="KASKO">KASKO</option>
+                                <option value="TRAFIK">TRAFIK</option>
+                                <option value="FIRE">FIRE</option>
+                                <option value="DIGER">DİĞER</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Sigorta Şirketi *</label>
+                            <select class="form-select" name="insurance_company" required>
+                                <option value="">Seçiniz</option>
+                                <option value="Aksigorta">Aksigorta</option>
+                                <option value="Allianz">Allianz</option>
+                                <option value="HDI">HDI</option>
+                                <option value="Generali">Generali</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Satışçı</label>
+                            <select class="form-select" name="salesperson" id="salespersonSelect">
+                                <option value="">Seçiniz</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Brüt Prim (₺)</label>
+                            <input type="number" class="form-control" name="gross_premium" step="0.01">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Bitiş Tarihi</label>
+                            <input type="date" class="form-control" name="end_date">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Notlar</label>
+                            <textarea class="form-control" name="notes" rows="3"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Kaydet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadSalespeople();
+    
+    document.getElementById('addPolicyForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        addPolicy();
+    });
+});
+
+async function loadSalespeople() {
+    try {
+        const response = await fetch('/api/salespeople');
+        const data = await response.json();
+        
+        const select = document.getElementById('salespersonSelect');
+        select.innerHTML = '<option value="">Seçiniz</option>';
+        
+        if (data.salespeople) {
+            data.salespeople.forEach(salesperson => {
+                const option = document.createElement('option');
+                option.value = salesperson.name;
+                option.textContent = salesperson.name;
+                select.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Satışçılar yüklenemedi:', error);
+    }
+}
+
+async function addPolicy() {
+    const formData = new FormData(document.getElementById('addPolicyForm'));
+    const data = Object.fromEntries(formData);
+    
+    try {
+        const response = await fetch('/api/policies', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('Poliçe başarıyla eklendi!');
+            location.reload();
+        } else {
+            alert('Hata: ' + result.error);
+        }
+    } catch (error) {
+        console.error('Poliçe ekleme hatası:', error);
+        alert('Poliçe eklenirken hata oluştu!');
+    }
+}
+
+function viewPolicy(id) {
+    alert('Poliçe görüntüleme özelliği yakında eklenecek!');
+}
+
+function editPolicy(id) {
+    alert('Poliçe düzenleme özelliği yakında eklenecek!');
+}
+
+function clearFilters() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('productFilter').value = '';
+    document.getElementById('statusFilter').value = '';
+    // Filtreleme işlemi burada yapılacak
+}
+</script>
+{% endblock %}
