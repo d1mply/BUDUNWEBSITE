@@ -13,7 +13,7 @@
     }
   ],
   "env": {
-    "SUPABASE_URL": "@supabase_url",
-    "SUPABASE_KEY": "@supabase_key"
+    "SUPABASE_URL": "https://btifkbhcpilyijejszcf.supabase.co",
+    "SUPABASE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ0aWZrYmhjcGlseWlqZWpzemNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcyNzkwMjEsImV4cCI6MjA3Mjg1NTAyMX0.lp7-VcEJ6sSRl-zfp8IVMYWk0JhCYjHFvyffKgsrbco"
   }
 }
